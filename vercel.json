@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/gemini-apiby AR.js": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     }
   }
 }
