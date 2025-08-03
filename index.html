@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gemini AI Chatbot</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <style>
+    :root {
+      --c1: #f1d2fc;
+      --c2: #e3f6ff;
+      --primary: #7a46e3;
+      --accent: #f27ac3;
+      --bg2: #fff;
+      --radius: 22px;
+      --shadow: 0 10px 38px #aab6ec33;
+    }
+    body {
+      background: linear-gradient(117deg, var(--c1) 0%, var(--c2) 100%);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;  padding: 0;
+      min-height: 100vh;
+    }
+    .main-card {
+      background: var(--bg2);
+      max-width: 440px;
+      margin: 54px auto 0;
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 36px 18px 32px 18px;
+      display: flex;
+      flex-direction: column;
+      min-height: 74vh;
+      position: relative;
+    }
+    .main-card::before {
+      content: "";
+      position: absolute;
+      left: -26px; top: -20px;
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, var(--c2) 30%, var(--primary) 90%);
+      border-radius: 50%;
+      filter: blur(40px) opacity(0.30);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .main-card::after {
+      content: "";
+      position: absolute;
+      right: -32px; bottom: -22px;
+      width: 95px; height: 95px;
+      background: linear-gradient(164deg, var(--accent) 20%, var(--primary) 90%);
+      border-radius: 50%;
+      filter: blur(40px) opacity(0.33);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .header {
+      z-index: 1;
+      position: relative;
+      text-align: center;
+      font-size: 2.05rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #c756aa;
+      font-size: 1.06rem;
+      margin-bottom: 19px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+    .chat-window {
+      flex: 1 1 auto;
+      max-height: 330px;
+      overflow-y: auto;
+      padding: 10px 8px;
+      background: #fafdff;
+      border-radius: 14px;
+      box-shadow: 0 2px 22px #eceffe24;
+      font-size: 1.02rem;
+      margin-bottom: 13px;
+      min-height: 130px;
+      transition: background 0.25s;
+    }
+    .msg-row { display: flex; margin: 15px 0; }
+    .msg-row.user  { justify-content: flex-end; }
+    .msg-row.ai    { justify-content: flex-start; }
+    .msg-txt {
+      padding: 10px 17px;
+      border-radius: 17px 17px 4px 17px;
+      background: #7a46e315;
+      max-width: 74vw;
+      word-break:break-word;
+      font-weight: 500;
+      box-shadow: 0 1.5px 4px #6a51c015;
+      border: 1.5px solid #ecd8fb;
+      font-size: 1.07rem;
+      animation: fadein 500ms;
+    }
+    .msg-row.user .msg-txt {
+      background: linear-gradient(92deg, var(--accent) 0, #fedfff 70%);
+      color: #a1325f;
+      border-radius: 17px 4px 17px 17px;
+      margin-right: 2.5vw;
+      border-color: #fde8fa;
+      justify-self: flex-end;
+    }
+    .msg-row.ai .msg-txt {
+      background: linear-gradient(87deg, #ede7f7 0%, #e8f7fa 92%);
+      color: #2a1a57;
+      margin-left: 2.5vw;
+      justify-self: flex-start;
+    }
+    @keyframes fadein { from {opacity:0;} to {opacity:1;} }
+    .input-area {
+      display: flex;
+      gap: 0.5em;
+      margin-top: 5px; position: relative; z-index: 2;
+    }
+    .input-area input[type="text"] {
+      flex: 1;
+      padding: 12px 14px;
+      font-size: 1rem;
+      border: 2px solid #f3d8fe;
+      border-radius: 8px 0 0 8px;
+      outline: none;
+      background: #fcfafd;
+      font-family: inherit;
+      transition: border 0.18s;
+    }
+    .input-area input[type="text"]:focus { border-color: var(--primary);}
+    .input-area button {
+      font-size: 1rem;
+      padding: 12px 21px;
+      background: linear-gradient(90deg, #7a46e3 10%, #f27ac3 90%);
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+      box-shadow: 0 2px 12px #dab7fe33;
+      transition: background 0.19s;
+    }
+    .input-area button:hover { background: linear-gradient(90deg,#f27ac3,#7a46e3);}
+    .footer {
+      text-align: center;
+      font-size: 0.97rem;
+      color: #aeaeb5;
+      margin-top: 16px;
+      z-index: 2;
+      position: relative;
+    }
+    .typing {
+      display: inline-block;
+      width: 1.5em;
+      height: 1em;
+      vertical-align: middle;
+      padding-left: 8px;
+    }
+    .dot { 
+      height: 0.9em; width: 0.33em; margin:0 0.1em;
+      background: #ac76e6; display:inline-block; border-radius: 10px;
+      animation: bounce 1.2s infinite both;
+    }
+    .dot:nth-child(2) {animation-delay: 0.15s;}
+    .dot:nth-child(3) {animation-delay: 0.32s;}
+    @keyframes bounce {
+      0%, 90%, 100% { transform:translateY(0);}
+      40% { transform:translateY(-7px);}
+    }
+    .status {
+      text-align: center;
+      margin: 18px 0 0 0;
+      color: #be295d;
+      font-size: 1rem;
+      font-weight: 500;
+      background: #ffe3f4;
+      border-radius: 8px;
+      padding: 11px 8px 11px 9px;
+      border: 1px solid #ffcfe5;
+    }
+    @media (max-width:540px){ .main-card {padding:10px 3vw 18px 3vw;} .header{font-size:1.1rem;} }
+  </style>
+</head>
+<body>
+  <div class="main-card">
+    <div class="header">Gemini AI Chatbot</div>
+    <div class="subtitle">Ask anything… Instantly powered by Gemini API Proxy!</div>
+    <div class="chat-window" id="chatWindow"></div>
+    <form class="input-area" id="chatForm" autocomplete="off">
+      <input id="userInput" type="text" placeholder="Type your question..." required autofocus>
+      <button type="submit">Send</button>
+    </form>
+    <div class="footer">
+      <small>Demo UI &middot; Free &middot; Gemini API Proxy &middot; <b>2025</b></small>
+    </div>
+  </div>
+  <script>
+    // Update the endpoint if needed!
+    const API_ENDPOINT = "/api/gemini";
+    const chatForm = document.getElementById('chatForm');
+    const chatWindow = document.getElementById('chatWindow');
+    const userInput = document.getElementById('userInput');
+    function addMsg(text, who='ai', isHtml=false) {
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + who;
+      const msg = document.createElement('div');
+      msg.className = 'msg-txt';
+      if(isHtml) msg.innerHTML = text; else msg.textContent = text;
+      row.appendChild(msg);
+      chatWindow.appendChild(row);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+    function showTyping() {
+      const row = document.createElement('div'); row.className='msg-row ai';
+      const msg = document.createElement('div'); msg.className='msg-txt';
+      msg.innerHTML = '<span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
+      row.id = 'ai-typing'; row.appendChild(msg); chatWindow.appendChild(row);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+    function removeTyping() {
+      const el = document.getElementById('ai-typing');
+      if(el) el.parentNode.removeChild(el);
+    }
+    function showStatus(msg) {
+      removeTyping();
+      let el = document.getElementById('status');
+      if(!el) {
+        el = document.createElement('div');
+        el.id = 'status'; el.className = 'status';
+        chatWindow.parentNode.insertBefore(el, chatWindow.nextSibling);
+      }
+      el.innerHTML = msg;
+    }
+    function hideStatus() {
+      const el = document.getElementById('status');
+      if(el) el.remove();
+    }
+    chatForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      hideStatus();
+      const txt = userInput.value.trim();
+      if(!txt) return;
+      addMsg(txt, 'user');
+      userInput.value = '';
+      showTyping();
+      try {
+        const res = await fetch(API_ENDPOINT+"?question="+encodeURIComponent(txt));
+        const data = await res.json();
+        removeTyping();
+        let aiMsg = '';
+        if (data.candidates && Array.isArray(data.candidates) && data.candidates.length) {
+          const parts = data.candidates[0]?.content?.parts;
+          aiMsg = parts ? parts.map(x=>x.text).join(' ') : JSON.stringify(data.candidates[0]);
+        } else if (data.text) {
+          aiMsg = data.text;
+        } else if(typeof data === "string") {
+          aiMsg = data;
+        } else {
+          aiMsg = "Sorry, couldn't get a valid reply.";
+        }
+        // Typing animation for AI (one char at a time)
+        let idx=0;
+        const aiRow = document.createElement('div'); aiRow.className='msg-row ai';
+        const aiMsgDiv = document.createElement('div'); aiMsgDiv.className='msg-txt'; aiMsgDiv.textContent='';
+        aiRow.appendChild(aiMsgDiv); chatWindow.appendChild(aiRow);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        function typeIt() {
+          aiMsgDiv.textContent += aiMsg[idx++];
+          chatWindow.scrollTop = chatWindow.scrollHeight;
+          if(idx<aiMsg.length) setTimeout(typeIt, 16);
+        }
+        typeIt();
+      } catch (err) {
+        removeTyping();
+        showStatus("Error: Unable to reach AI backend.");
+      }
+    });
+  </script>
+</body>
+</html>
